@@ -4,19 +4,25 @@
 	<meta charset="UTF-8">
 	<title>Document</title>
 	<style>
+		table{
+			margin: 50px auto;
+		}
 		td{
-			width: 50px;
+			width: 100px;
 			text-align: center;
 		}
 	</style>
 </head>
 <body>
-	<table border="1" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-		<tbody id="table"></tbody>
+	<table border="1">
+		<tbody id="table1"></tbody>
 	</table>
+	<!-- <table id="model" border="1" cellpadding="0" cellspacing="0">
+		<tbody id="table2"></tbody>
+	</table> -->
 	<script>
 		var arr=[
-			[2, , ,3, ,6, , , ,],
+			[2, , ,3, , , , , ,],
 			[6, ,5,9, , ,4, ,8,],
 			[ , , , , , ,5, ,2,],
 			[4, ,9, ,6,3, , , ,],
@@ -26,16 +32,171 @@
 			[ ,2, , , , ,8, ,4,],
 			[ , ,4, ,1,8, , ,7,],
 		];
-		var table=document.getElementById('table');
-		var str='';
-		for(var i=0,l=arr.length;i<l;i++){
-			str+='<tr>';
-			for(var j=0;j<arr[i].length;j++){
-				str+="<td>"+(arr[i][j]||"")+"</td>"
+		var tmpArrs=[];
+		var table1=document.getElementById('table1');
+		// var table2=document.getElementById('table2');
+		function initTable(table){
+			var str='';
+			for(var i=0,l=arr.length;i<l;i++){
+				str+='<tr>';
+				for(var j=0;j<arr[i].length;j++){
+					str+="<td>"+(arr[i][j]||"")+"</td>"
+				}
+				str+='</tr>';
 			}
-			str+='</tr>';
+			table.innerHTML=str;
 		}
-		table.innerHTML=str;
+		function createTable(table){
+			var str='';
+			for(var i=0,l=arr.length;i<l;i++){
+				str+='<tr>';
+				for(var j=0;j<arr[i].length;j++){
+					str+="<td>"+(arr[i][j]||"")+"</td>"
+				}
+				str+='</tr>';
+			}
+			// table.innerHTML=str;
+            var tableNode=document.createElement("table");
+            tableNode.border="1";
+            // tableNode.cellpadding="0";
+            // tableNode.cellspacing="0";
+		  	tableNode.innerHTML = str;
+			document.getElementsByTagName('body')[0].append(tableNode);
+		}
+		initTable(table1);
+		function creatAll(){
+			for(var i=0,l=arr.length;i<l;i++){
+				var tmpHasX=arr[i].join('');
+				for(var j=0;j<arr[i].length;j++){
+					if(!arr[i][j]) {
+						var tmpHasAll=tmpHasX;
+						for(var k=0;k<arr.length;k++){
+							if(arr[k][j]>0&&arr[k][j]<10) {
+								tmpHasAll+=arr[k][j];
+							}
+						}
+						var all=[];
+						for(var k=1;k<arr.length+1;k++){
+							if(tmpHasAll.indexOf(k)===-1) all.push(k);
+						}
+						arr[i][j]=all;
+					}
+				}
+			}
+			createTable();
+		}
+		creatAll();
+		function arrToNumber(){
+			for(var i=0,l=arr.length;i<l;i++){
+				for(var j=0;j<arr[i].length;j++){
+					if((typeof arr[i][j])==='object'&&arr[i][j].length===1) {
+						if(i===2&&j===2){
+						// console.log('x:',i);
+						// console.log('y:',j);
+						// console.log('value:',arr[i][j][0]);
+						}
+						arr[i][j]=arr[i][j][0];
+						createTable();
+						cutOne(i,j,arr[i][j]);
+					}
+
+				}
+			}
+		}
+		function cutOne(x,y,value){
+			for(var i=0,l=arr[x].length;i<l;i++){
+				if((typeof arr[x][i])==="object"&&arr[x][i].indexOf(value)>-1) {
+					arr[x][i].splice(arr[x][i].indexOf(value),1);
+					if(arr[x][i].length===0) {
+						// console.log('取------------------------');
+						arr=clongArr(tmpArrs[tmpArrs.length-1]);
+						tmpArrs.pop();
+						// console.log('栈长:',tmpArrs.length);
+						// console.log('活动:',clongArr(arr));
+						createTable();
+						findFirst(1);
+					}
+				}
+			}
+			for(var j=0;j<arr.length;j++){
+				if((typeof arr[j][y])==="object"&&arr[j][y].indexOf(value)>-1) {
+					arr[j][y].splice(arr[j][y].indexOf(value),1);
+					if(arr[j][y].length===0) {
+						// console.log('取-------------------------');
+						arr=clongArr(tmpArrs[tmpArrs.length-1]);
+						tmpArrs.pop();
+						// console.log('栈长:',tmpArrs.length);
+						// console.log('活动:',clongArr(arr));
+						createTable();
+						findFirst(1);
+					}
+				}
+			}
+						// console.log('取------------------------');
+
+			arrToNumber();
+		}
+		function ifFinish(){
+			var finish=true;
+			for(var i=0,l=arr.length;i<l;i++){
+				for(var j=0;j<arr[i].length;j++){
+					if((typeof arr[i][j])==='object') finish=false;
+				}
+			}
+			return finish;
+		}
+		var timer=setInterval(function(){
+			setTimeout(function(){
+				arrToNumber();
+				// createTable();
+			},5000)
+			setTimeout(function(){
+				findFirst();
+				arrToNumber();
+				// createTable();
+				if(ifFinish()) {
+					console.log('finish');
+					clearInterval(timer);
+				}
+			},10000)
+		},10000)
+		function clongArr(arr){
+			var newArr=[];
+			for(var i=0,l=arr.length;i<l;i++){
+				newArr[i]=[];
+				for(var j=0;j<arr[i].length;j++){
+					if((typeof arr[i][j])==='object') {
+						newArr[i][j]=arr[i][j].join().split(',');
+						// newArr[i][j]=[1,2,3];
+						// console.log(arr[i][j]);
+					}
+					else newArr[i][j]=arr[i][j];
+				}
+			}
+			return newArr;
+		}
+		function findFirst(index){
+			for(var i=0,l=arr.length;i<l;i++){
+				for(var j=0;j<arr[i].length;j++){
+					if(arr[i][j].length===2) {
+						tmpArrs.push(clongArr(arr));
+						// console.log("存--------------------------------")
+						// console.log("栈长:",tmpArrs.length);
+						// console.log("活动:",clongArr(arr));
+						// console.log("x:",i);
+						// console.log("y:",j);
+						// console.log("value:",arr[i][j]);
+						arr[i][j]=[arr[i][j][index||0]];
+						// console.log("活动取值后:",clongArr(arr));
+
+						createTable();
+						arrToNumber();
+						return false;
+					}
+				}
+			}
+		}
+		// arrToNumber();
 	</script>
 </body>
 </html>
